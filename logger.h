@@ -16,7 +16,7 @@ enum class LogLevel {
 };
 
 class Logger {
-public:
+  public:
     static Logger& instance() {
         static Logger logger;
         return logger;
@@ -25,15 +25,15 @@ public:
     template<typename... Args>
     void log(LogLevel level, const char* file, int line, const char* fmt, Args... args) {
         std::lock_guard<std::mutex> lock(mutex_);
-        
+
         std::stringstream ss;
         ss << getCurrentTime() << " "
            << getLevelStr(level) << " "
            << "[" << file << ":" << line << "] ";
-        
+
         format(ss, fmt, args...);
         ss << "\n";
-        
+
         std::string msg = ss.str();
         if (outputFile_.is_open()) {
             outputFile_ << msg;
@@ -47,9 +47,9 @@ public:
         return outputFile_.is_open();
     }
 
-private:
+  private:
     Logger() = default;
-    
+
     static std::string getCurrentTime() {
         char buffer[32];
         time_t now = time(nullptr);
@@ -60,12 +60,18 @@ private:
 
     static const char* getLevelStr(LogLevel level) {
         switch (level) {
-            case LogLevel::DEBUG: return "DEBUG";
-            case LogLevel::INFO:  return "INFO ";
-            case LogLevel::WARN:  return "WARN ";
-            case LogLevel::ERROR: return "ERROR";
-            case LogLevel::FATAL: return "FATAL";
-            default: return "UNKNOWN";
+        case LogLevel::DEBUG:
+            return "DEBUG";
+        case LogLevel::INFO:
+            return "INFO ";
+        case LogLevel::WARN:
+            return "WARN ";
+        case LogLevel::ERROR:
+            return "ERROR";
+        case LogLevel::FATAL:
+            return "FATAL";
+        default:
+            return "UNKNOWN";
         }
     }
 
@@ -94,11 +100,11 @@ private:
         }
     }
 
-	void format(std::stringstream& ss, const char* fmt) {
-		while (*fmt) {
-			ss << *fmt++;
-		}
-	}
+    void format(std::stringstream& ss, const char* fmt) {
+        while (*fmt) {
+            ss << *fmt++;
+        }
+    }
 
     std::mutex mutex_;
     std::ofstream outputFile_;

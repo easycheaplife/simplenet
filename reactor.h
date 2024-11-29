@@ -4,9 +4,9 @@
 #include <unordered_map>
 
 class Reactor {
-public:
+  public:
     using EventCallback = std::function<void()>;
-    
+
     enum class EventType {
         READ = 0x01,
         WRITE = 0x02,
@@ -20,7 +20,7 @@ public:
     virtual bool updateEvent(int fd, EventType type) = 0;
     virtual void poll(int timeoutMs) = 0;
 
-protected:
+  protected:
     std::unordered_map<int, EventCallback> readCallbacks_;
     std::unordered_map<int, EventCallback> writeCallbacks_;
 };

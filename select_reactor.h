@@ -4,7 +4,7 @@
 #include "logger.h"
 
 class SelectReactor : public Reactor {
-public:
+  public:
     SelectReactor() = default;
     ~SelectReactor() override = default;
 
@@ -18,17 +18,17 @@ public:
         }
 
         switch (type) {
-            case EventType::READ:
-                FD_SET(fd, &readFds_);
-                readCallbacks_[fd] = cb;
-                break;
-            case EventType::WRITE:
-                FD_SET(fd, &writeFds_);
-                writeCallbacks_[fd] = cb;
-                break;
-            default:
-                LOG_ERROR("Unsupported event type");
-                return false;
+        case EventType::READ:
+            FD_SET(fd, &readFds_);
+            readCallbacks_[fd] = cb;
+            break;
+        case EventType::WRITE:
+            FD_SET(fd, &writeFds_);
+            writeCallbacks_[fd] = cb;
+            break;
+        default:
+            LOG_ERROR("Unsupported event type");
+            return false;
         }
 
         maxFd_ = std::max(maxFd_, fd);
@@ -42,24 +42,24 @@ public:
         }
 
         switch (type) {
-            case EventType::READ:
-                FD_CLR(fd, &readFds_);
-                readCallbacks_.erase(fd);
-                break;
-            case EventType::WRITE:
-                FD_CLR(fd, &writeFds_);
-                writeCallbacks_.erase(fd);
-                break;
-            default:
-                LOG_ERROR("Unsupported event type");
-                return false;
+        case EventType::READ:
+            FD_CLR(fd, &readFds_);
+            readCallbacks_.erase(fd);
+            break;
+        case EventType::WRITE:
+            FD_CLR(fd, &writeFds_);
+            writeCallbacks_.erase(fd);
+            break;
+        default:
+            LOG_ERROR("Unsupported event type");
+            return false;
         }
 
         // 更新maxFd_
         if (fd == maxFd_) {
-            while (maxFd_ >= 0 && 
-                   !FD_ISSET(maxFd_, &readFds_) && 
-                   !FD_ISSET(maxFd_, &writeFds_)) {
+            while (maxFd_ >= 0 &&
+                    !FD_ISSET(maxFd_, &readFds_) &&
+                    !FD_ISSET(maxFd_, &writeFds_)) {
                 --maxFd_;
             }
         }
@@ -68,11 +68,11 @@ public:
 
     bool updateEvent(int fd, EventType type) override {
         removeEvent(fd, type);
-        return addEvent(fd, type, type == EventType::READ ? 
-                       readCallbacks_[fd] : writeCallbacks_[fd]);
+        return addEvent(fd, type, type == EventType::READ ?
+                        readCallbacks_[fd] : writeCallbacks_[fd]);
     }
 
-private:
+  private:
     fd_set readFds_;
     fd_set writeFds_;
     int maxFd_{-1};

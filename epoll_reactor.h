@@ -5,7 +5,7 @@
 #include <vector>
 
 class EpollReactor : public Reactor {
-public:
+  public:
     EpollReactor();
     ~EpollReactor() override;
 
@@ -14,17 +14,17 @@ public:
     bool addEvent(int fd, EventType type, const EventCallback& cb) override;
     bool removeEvent(int fd, EventType type) override;
     bool updateEvent(int fd, EventType type) override;
-private:
-	void clearEvents(int fd) {
-		fdEvents_.erase(fd);
-		readCallbacks_.erase(fd);
-		writeCallbacks_.erase(fd);
-		if (epollFd_ >= 0) {
-			epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, nullptr);
-		}
-	}
+  private:
+    void clearEvents(int fd) {
+        fdEvents_.erase(fd);
+        readCallbacks_.erase(fd);
+        writeCallbacks_.erase(fd);
+        if (epollFd_ >= 0) {
+            epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, nullptr);
+        }
+    }
 
-private:
+  private:
     int epollFd_{-1};
     std::vector<epoll_event> events_;
     std::unordered_map<int, uint32_t> fdEvents_;

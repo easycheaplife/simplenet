@@ -3,7 +3,7 @@
 #include <cstring>
 
 class RingBuffer {
-public:
+  public:
     explicit RingBuffer(size_t capacity = 8192)
         : buffer_(capacity), readPos_(0), writePos_(0) {}
 
@@ -55,7 +55,7 @@ public:
         return len;
     }
 
-private:
+  private:
     void ensureWritableBytes(size_t len) {
         if (writableBytes() < len) {
             makeSpace(len);
@@ -68,8 +68,8 @@ private:
         } else {
             size_t readable = readableBytes();
             std::copy(&buffer_[readPos_],
-                     &buffer_[writePos_],
-                     &buffer_[0]);
+                      &buffer_[writePos_],
+                      &buffer_[0]);
             readPos_ = 0;
             writePos_ = readable;
         }

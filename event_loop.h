@@ -5,23 +5,23 @@
 #include "reactor.h"
 
 class EventLoop {
-public:
+  public:
     EventLoop();
     ~EventLoop();
 
     void start();
     void stop();
-    
-    bool addEvent(int fd, Reactor::EventType type, 
-                 const Reactor::EventCallback& cb);
 
-	bool removeEvent(int fd, Reactor::EventType type) {
-		return reactor_->removeEvent(fd, type);
-	}
+    bool addEvent(int fd, Reactor::EventType type,
+                  const Reactor::EventCallback& cb);
 
-private:
+    bool removeEvent(int fd, Reactor::EventType type) {
+        return reactor_->removeEvent(fd, type);
+    }
+
+  private:
     void loop();
-    
+
     std::unique_ptr<Reactor> reactor_;
     std::thread loopThread_;
     std::atomic<bool> running_{false};

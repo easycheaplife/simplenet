@@ -14,7 +14,7 @@ struct MessageHeader {
 #pragma pack(pop)
 
 class Message {
-public:
+  public:
     static const size_t HEADER_SIZE = sizeof(MessageHeader);
     MessageHeader header;
     std::vector<char> body;

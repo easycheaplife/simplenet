@@ -9,45 +9,45 @@
 #include "logger.h"
 
 class Socket {
-public:
+  public:
     Socket() : fd_(-1) {}
 
-	Socket(const std::string& ip, uint16_t port) : fd_(-1) {
-		create();
-		bind(ip, port);
-	}
-    
+    Socket(const std::string& ip, uint16_t port) : fd_(-1) {
+        create();
+        bind(ip, port);
+    }
+
     explicit Socket(int fd) : fd_(fd) {
         setNonBlocking();
         setTcpNoDelay();
     }
 
-	Socket(Socket&& other) noexcept : fd_(other.fd_) {
-		other.fd_ = -1;  // 防止其他对象关闭文件描述符
-	}
+    Socket(Socket&& other) noexcept : fd_(other.fd_) {
+        other.fd_ = -1;  // 防止其他对象关闭文件描述符
+    }
 
-	Socket& operator=(Socket&& other) noexcept {
-		if (this != &other) {
-			close();
-			fd_ = other.fd_;
-			other.fd_ = -1;
-		}
-		return *this;
-	}
+    Socket& operator=(Socket&& other) noexcept {
+        if (this != &other) {
+            close();
+            fd_ = other.fd_;
+            other.fd_ = -1;
+        }
+        return *this;
+    }
 
     ~Socket() {
-		close();
-	}
+        close();
+    }
 
-	void close() {
-		if (fd_ >= 0) {
-			::close(fd_);
-			fd_ = -1;
-		}
-	}
+    void close() {
+        if (fd_ >= 0) {
+            ::close(fd_);
+            fd_ = -1;
+        }
+    }
 
     bool create() {
-		close();
+        close();
         fd_ = ::socket(AF_INET, SOCK_STREAM, 0);
         if (fd_ < 0) {
             LOG_ERROR("Create socket failed: {}", strerror(errno));
@@ -111,24 +111,24 @@ public:
         return true;
     }
 
-	bool setBlocking() {
-		int flags = fcntl(fd_, F_GETFL, 0);
-		if (flags < 0) {
-			LOG_ERROR("Get flags failed: {}", strerror(errno));
-			return false;
-		}
-		flags &= ~O_NONBLOCK;
-		if (fcntl(fd_, F_SETFL, flags) < 0) {
-			LOG_ERROR("Set blocking failed: {}", strerror(errno));
-			return false;
-		}
-		return true;
-	}
+    bool setBlocking() {
+        int flags = fcntl(fd_, F_GETFL, 0);
+        if (flags < 0) {
+            LOG_ERROR("Get flags failed: {}", strerror(errno));
+            return false;
+        }
+        flags &= ~O_NONBLOCK;
+        if (fcntl(fd_, F_SETFL, flags) < 0) {
+            LOG_ERROR("Set blocking failed: {}", strerror(errno));
+            return false;
+        }
+        return true;
+    }
 
     bool setTcpNoDelay() {
         int optval = 1;
-        if (setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY, 
-                      &optval, sizeof(optval)) < 0) {
+        if (setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY,
+                       &optval, sizeof(optval)) < 0) {
             LOG_ERROR("Set TCP_NODELAY failed: {}", strerror(errno));
             return false;
         }
@@ -137,17 +137,21 @@ public:
 
     bool setReuseAddr() {
         int optval = 1;
-        if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, 
-                      &optval, sizeof(optval)) < 0) {
+        if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR,
+                       &optval, sizeof(optval)) < 0) {
             LOG_ERROR("Set SO_REUSEADDR failed: {}", strerror(errno));
             return false;
         }
         return true;
     }
 
-    int fd() const { return fd_; }
-    bool isValid() const { return fd_ >= 0; }
+    int fd() const {
+        return fd_;
+    }
+    bool isValid() const {
+        return fd_ >= 0;
+    }
 
-private:
+  private:
     int fd_;
 };
