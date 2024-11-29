@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <vector>
 
+#define MAGIC_NUMBER	0x12345678
+
 #pragma pack(push, 1)
 struct MessageHeader {
     uint32_t magic{0x12345678};  // 魔数

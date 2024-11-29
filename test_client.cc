@@ -39,7 +39,7 @@ public:
 
     bool sendMessage(uint16_t type, const std::string& data) {
         MessageHeader header;
-        header.magic = 0x12345678;
+        header.magic = MAGIC_NUMBER;
         header.length = data.size();
         header.type = type;
         header.version = 1;
@@ -82,7 +82,7 @@ public:
 			}
 		}
 
-		if (header.magic != 0x12345678) {
+		if (header.magic != MAGIC_NUMBER) {
 			std::cerr << "Invalid magic number" << std::endl;
 			return false;
 		}

@@ -203,7 +203,7 @@ class StressTestClient {
 		bool sendMessage(uint16_t type, const std::string& data) {
 			try {
 				MessageHeader header;
-				header.magic = 0x12345678;
+				header.magic = MAGIC_NUMBER;
 				header.version = 1;
 				header.type = type;
 				header.length = data.size();
@@ -234,7 +234,7 @@ class StressTestClient {
 					return false;
 				}
 
-				if (respHeader.magic != 0x12345678) {
+				if (respHeader.magic != MAGIC_NUMBER) {
 					std::cerr << "Invalid response magic number" << std::endl;
 					return false;
 				}
@@ -283,7 +283,7 @@ class StressTestClient {
 						<< ", type=" << header.type 
 						<< ", length=" << std::dec << header.length << std::endl;
 
-					if (header.magic != 0x12345678) {
+					if (header.magic != MAGIC_NUMBER) {
 						std::cerr << "Invalid magic number: " << std::hex << header.magic << std::endl;
 						reconnect();
 						continue;
