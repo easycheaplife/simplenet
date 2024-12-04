@@ -2,6 +2,7 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
+#include <mutex>
 
 class Reactor {
   public:
@@ -23,4 +24,5 @@ class Reactor {
   protected:
     std::unordered_map<int, EventCallback> readCallbacks_;
     std::unordered_map<int, EventCallback> writeCallbacks_;
+	mutable std::mutex mutex_;
 };
