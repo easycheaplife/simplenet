@@ -25,7 +25,7 @@ class Logger {
     template<typename... Args>
     void log(LogLevel level, const char* file, int line, const char* fmt, Args... args) {
         std::lock_guard<std::mutex> lock(mutex_);
-
+		if (level < logLevel_) { return; }
         std::stringstream ss;
         ss << getCurrentTime() << " "
            << getLevelStr(level) << " "
@@ -42,8 +42,9 @@ class Logger {
         std::cout << msg;
     }
 
-    bool init(const std::string& filename) {
+    bool init(const std::string& filename, LogLevel level = LogLevel::INFO) {
         outputFile_.open(filename, std::ios::app);
+		logLevel_ = level;
         return outputFile_.is_open();
     }
 
@@ -108,6 +109,7 @@ class Logger {
 
     std::mutex mutex_;
     std::ofstream outputFile_;
+	LogLevel logLevel_;
 };
 
 #define LOG_DEBUG(fmt, ...) \

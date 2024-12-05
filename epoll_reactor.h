@@ -16,6 +16,7 @@ class EpollReactor : public Reactor {
     bool updateEvent(int fd, EventType type) override;
   private:
     void clearEvents(int fd) {
+		std::lock_guard<std::mutex> lock(mutex_);
         fdEvents_.erase(fd);
         readCallbacks_.erase(fd);
         writeCallbacks_.erase(fd);
