@@ -74,7 +74,7 @@ class TestClient {
                 return false;
             } else {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     continue;
                 }
                 std::cerr << "Read header failed: " << strerror(errno) << std::endl;
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
         TestClient client(argv[1], std::stoi(argv[2]));
 
         // 发送多条测试消息
-        for (int i = 1; i <= 10; ++i) {
+        for (int i = 1; i <= 1000000; ++i) {
             std::string message = "Test message " + std::to_string(i);
             std::cout << "Sending: " << message << std::endl;
 
@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
             }
 
             // 稍微延迟一下
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
 
     } catch (const std::exception& e) {

@@ -14,9 +14,17 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
 #include <errno.h>
 #include "message.h"
+
+
+#if 1
+#ifndef FUN_RECEIVE_RESPONSE
+#define FUN_RECEIVE_RESPONSE
+#endif // FUN_RECEIVE_RESPONSE
+#endif
 
 // Socket类
 class Socket {
@@ -231,6 +239,7 @@ class StressTestClient {
 
             std::cout << "Message sent successfully" << std::endl;
 
+#ifndef FUN_RECEIVE_RESPONSE 
             // 等待响应
             MessageHeader respHeader;
             if (!receiveAll(&respHeader, sizeof(respHeader))) {
@@ -250,6 +259,7 @@ class StressTestClient {
             }
 
             std::cout << "Response received successfully" << std::endl;
+#endif // FUN_RECEIVE_RESPONSE
             return true;
         } catch (const std::exception& e) {
             std::cerr << "Error in sendMessage: " << e.what() << std::endl;
@@ -258,6 +268,9 @@ class StressTestClient {
     }
 
     bool receiveResponse() {
+#ifndef FUN_RECEIVE_RESPONSE
+		return true;
+#else
         for (int retry = 0; retry < 3; ++retry) {
             try {
                 std::cout << "Waiting for response..." << std::endl;
@@ -276,7 +289,7 @@ class StressTestClient {
                 // 接收剩余的header
                 char* headerPtr = reinterpret_cast<char*>(&header);
                 headerPtr[0] = firstByte;
-                if (!receiveAll(headerPtr + 1, sizeof(header) - 1, 5000)) {
+                if (!receiveAll(headerPtr + 1, sizeof(header) - 1, 1000)) {
                     std::cerr << "Failed to receive complete header, retry " << retry << std::endl;
                     reconnect();
                     continue;
@@ -302,7 +315,7 @@ class StressTestClient {
                 std::vector<char> data(header.length);
                 std::cout << "Receiving data (" << header.length << " bytes)..." << std::endl;
 
-                if (!receiveAll(data.data(), header.length, 5000)) {
+                if (!receiveAll(data.data(), header.length, 1000)) {
                     std::cerr << "Failed to receive data, retry " << retry << std::endl;
                     reconnect();
                     continue;
@@ -317,6 +330,7 @@ class StressTestClient {
             }
         }
         return false;
+#endif // FUN_RECEIVE_RESPONSE 
     }
 
   private:
@@ -451,7 +465,19 @@ class ProgressBar {
     std::mutex mutex_;
 };
 
+void setupSignalHandlers() {
+    signal(SIGPIPE, SIG_IGN);  // 忽略 SIGPIPE
+
+    struct sigaction sa;
+    sa.sa_handler = [](int) { /* 优雅退出的处理逻辑 */ };
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, nullptr);
+    sigaction(SIGTERM, &sa, nullptr);
+}
+
 int main(int argc, char* argv[]) {
+	setupSignalHandlers();
     if (argc < 6) {
         std::cerr << "Usage: " << argv[0]
                   << " <ip> <port> <threads> <requests_per_thread> <message_size>"
@@ -531,8 +557,7 @@ int main(int argc, char* argv[]) {
                         bool success = false;
 
                         try {
-                            success = client->sendMessage(1, message) &&
-                                      client->receiveResponse();
+                            success = client->sendMessage(1, message) && client->receiveResponse();
                         } catch (const std::exception& e) {
                             std::lock_guard<std::mutex> lock(errorMutex);
                             std::cerr << "Thread " << i << " request error: " << e.what() << std::endl;

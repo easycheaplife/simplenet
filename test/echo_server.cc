@@ -35,7 +35,7 @@ class EchoServer {
 };
 
 int main() {
-    Logger::instance().init("echo_server.log");
+    Logger::instance().init("logs/echo_server.log");
 
     try {
         EchoServer server("0.0.0.0", 8080);

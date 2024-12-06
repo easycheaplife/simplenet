@@ -15,7 +15,7 @@ int main() {
     signal(SIGTERM, signalHandler);
 
     // 初始化日志
-    if (!Logger::instance().init("server.log", LogLevel::DEBUG)) {
+    if (!Logger::instance().init("logs/server.log", LogLevel::DEBUG)) {
         std::cerr << "Init logger failed" << std::endl;
         return 1;
     }
