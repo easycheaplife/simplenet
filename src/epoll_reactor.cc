@@ -26,7 +26,7 @@ bool EpollReactor::init() {
 }
 
 void EpollReactor::poll(int timeoutMs) {
-	std::vector<epoll_event> activeEvents = events_;
+    std::vector<epoll_event> activeEvents = events_;
     int numEvents = epoll_wait(epollFd_, activeEvents.data(), MAX_EVENTS, timeoutMs);
 
     if (numEvents < 0) {
@@ -36,41 +36,41 @@ void EpollReactor::poll(int timeoutMs) {
         return;
     }
 
-	std::vector<std::pair<int, EventCallback>> pendingCallbacks;
-	{
-		std::lock_guard<std::mutex> lock(mutex_);
-		for (int i = 0; i < numEvents; ++i) {
-			int fd = activeEvents[i].data.fd;
-			uint32_t events = activeEvents[i].events;
-			if (events & (EPOLLERR | EPOLLHUP)) {
-				LOG_WARN("epoll error on fd: {}", fd);
-				if (close(fd) < 0) {
-					LOG_ERROR("Failed to close fd {}: {}", fd, strerror(errno));
-				} else {
-					LOG_INFO("Closed fd {} due to EPOLLERR/EPOLLHUP", fd);
-				}
-				readCallbacks_.erase(fd);
-				writeCallbacks_.erase(fd);
-				continue;
-			}
+    std::vector<std::pair<int, EventCallback>> pendingCallbacks;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        for (int i = 0; i < numEvents; ++i) {
+            int fd = activeEvents[i].data.fd;
+            uint32_t events = activeEvents[i].events;
+            if (events & (EPOLLERR | EPOLLHUP)) {
+                LOG_WARN("epoll error on fd: {}", fd);
+                if (close(fd) < 0) {
+                    LOG_ERROR("Failed to close fd {}: {}", fd, strerror(errno));
+                } else {
+                    LOG_INFO("Closed fd {} due to EPOLLERR/EPOLLHUP", fd);
+                }
+                readCallbacks_.erase(fd);
+                writeCallbacks_.erase(fd);
+                continue;
+            }
 
-			if (events & EPOLLIN) {
-				auto it = readCallbacks_.find(fd);
-				if (it != readCallbacks_.end()) {
-					pendingCallbacks.emplace_back(fd, it->second);
-				}
-			}
+            if (events & EPOLLIN) {
+                auto it = readCallbacks_.find(fd);
+                if (it != readCallbacks_.end()) {
+                    pendingCallbacks.emplace_back(fd, it->second);
+                }
+            }
 
-			if (events & EPOLLOUT) {
-				auto it = writeCallbacks_.find(fd);
-				if (it != writeCallbacks_.end()) {
-					pendingCallbacks.emplace_back(fd, it->second);
-				}
-			}
-		}
-	}
+            if (events & EPOLLOUT) {
+                auto it = writeCallbacks_.find(fd);
+                if (it != writeCallbacks_.end()) {
+                    pendingCallbacks.emplace_back(fd, it->second);
+                }
+            }
+        }
+    }
 
-	for (const auto& callback_pair : pendingCallbacks) {
+    for (const auto& callback_pair : pendingCallbacks) {
         const int fd = callback_pair.first;
         const EventCallback& callback = callback_pair.second;
         if (callback) {
@@ -79,8 +79,8 @@ void EpollReactor::poll(int timeoutMs) {
             } catch (const std::exception& e) {
                 LOG_ERROR("Callback exception for fd {}: {}", fd, e.what());
                 std::lock_guard<std::mutex> lock(mutex_);
-				readCallbacks_.erase(fd);
-				writeCallbacks_.erase(fd);
+                readCallbacks_.erase(fd);
+                writeCallbacks_.erase(fd);
             }
         }
     }
@@ -98,7 +98,7 @@ bool EpollReactor::addEvent(int fd, EventType type, const EventCallback& cb) {
     auto it = fdEvents_.find(fd);
     uint32_t events = (it != fdEvents_.end()) ? it->second : 0;
 
-	std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (type == EventType::READ) {
         events |= (EPOLLIN | EPOLLET);
         readCallbacks_[fd] = cb;
@@ -143,7 +143,7 @@ bool EpollReactor::removeEvent(int fd, EventType type) {
         return true;
     }
 
-	std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     uint32_t events = it->second;
     if (type == EventType::READ) {
         events &= ~EPOLLIN;
