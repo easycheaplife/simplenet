@@ -49,8 +49,7 @@ void EpollReactor::poll(int timeoutMs) {
                 } else {
                     LOG_INFO("Closed fd {} due to EPOLLERR/EPOLLHUP", fd);
                 }
-                readCallbacks_.erase(fd);
-                writeCallbacks_.erase(fd);
+                clearEvents(fd);
                 continue;
             }
 
@@ -92,13 +91,13 @@ bool EpollReactor::addEvent(int fd, EventType type, const EventCallback& cb) {
         return false;
     }
 
+    std::lock_guard<std::mutex> lock(mutex_);
     struct epoll_event ev {};
     ev.data.fd = fd;
 
     auto it = fdEvents_.find(fd);
     uint32_t events = (it != fdEvents_.end()) ? it->second : 0;
 
-    std::lock_guard<std::mutex> lock(mutex_);
     if (type == EventType::READ) {
         events |= (EPOLLIN | EPOLLET);
         readCallbacks_[fd] = cb;
@@ -137,13 +136,13 @@ bool EpollReactor::addEvent(int fd, EventType type, const EventCallback& cb) {
 }
 
 bool EpollReactor::removeEvent(int fd, EventType type) {
+    std::lock_guard<std::mutex> lock(mutex_);
     auto it = fdEvents_.find(fd);
     if (it == fdEvents_.end()) {
         // 如果文件描述符不在事件表中，视为成功
         return true;
     }
 
-    std::lock_guard<std::mutex> lock(mutex_);
     uint32_t events = it->second;
     if (type == EventType::READ) {
         events &= ~EPOLLIN;
@@ -152,6 +151,7 @@ bool EpollReactor::removeEvent(int fd, EventType type) {
         events &= ~EPOLLOUT;
         writeCallbacks_.erase(fd);
     }
+    events &= ~EPOLLET;
 
     if (events == 0) {
         // 如果没有任何事件，直接删除

@@ -239,7 +239,7 @@ class StressTestClient {
 
             std::cout << "Message sent successfully" << std::endl;
 
-#ifndef FUN_RECEIVE_RESPONSE 
+#ifndef FUN_RECEIVE_RESPONSE
             // 等待响应
             MessageHeader respHeader;
             if (!receiveAll(&respHeader, sizeof(respHeader))) {
@@ -269,7 +269,7 @@ class StressTestClient {
 
     bool receiveResponse() {
 #ifndef FUN_RECEIVE_RESPONSE
-		return true;
+        return true;
 #else
         for (int retry = 0; retry < 3; ++retry) {
             try {
@@ -477,7 +477,7 @@ void setupSignalHandlers() {
 }
 
 int main(int argc, char* argv[]) {
-	setupSignalHandlers();
+    setupSignalHandlers();
     if (argc < 6) {
         std::cerr << "Usage: " << argv[0]
                   << " <ip> <port> <threads> <requests_per_thread> <message_size>"

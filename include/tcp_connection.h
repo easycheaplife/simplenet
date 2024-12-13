@@ -41,14 +41,14 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
         return socket_.fd();
     }
 
+    void close();
+
   private:
     void handleRead();
 
     void handleWrite();
 
     void handleMessage(const MessageHeader& header, const std::vector<char>& body);
-
-    void close();
 
     void processMessages();
 

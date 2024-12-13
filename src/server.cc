@@ -39,6 +39,10 @@ int main() {
 
         // 设置连接关闭回调
         server.setCloseCallback([](const std::shared_ptr<TcpConnection>& conn) {
+            if (!conn) {
+                return;
+            }
+            conn->close();
             LOG_INFO("Connection closed: fd={}", conn->fd());
         });
 
