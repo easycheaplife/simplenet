@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(tcp_server)
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,6 +42,10 @@ add_executable(client_test
     ${PROJECT_SOURCE_DIR}/test/client_test.cc
 )
 
+add_executable(echo_client
+    ${PROJECT_SOURCE_DIR}/test/echo_client.cc
+)
+
 # 压力测试可执行文件
 add_executable(stress_test
     ${PROJECT_SOURCE_DIR}/test/stress_test.cc
@@ -49,7 +55,7 @@ add_executable(stress_test
 find_package(Threads REQUIRED)
 
 # 为所有目标链接线程库
-foreach(target server echo_server client_test stress_test)
+foreach(target server echo_server client_test echo_client stress_test)
     target_link_libraries(${target} PRIVATE Threads::Threads)
 endforeach()
 
@@ -57,7 +63,7 @@ endforeach()
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)
 
 # 安装配置
-install(TARGETS server echo_server client_test stress_test
+install(TARGETS server echo_server client_test echo_client stress_test
     RUNTIME DESTINATION bin
 )
 
