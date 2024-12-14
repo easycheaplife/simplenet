@@ -21,13 +21,17 @@ void SelectReactor::poll(int timeoutMs) {
             if (FD_ISSET(fd, &readFdsCopy)) {
                 auto it = readCallbacks_.find(fd);
                 if (it != readCallbacks_.end()) {
-                    it->second();
+                    if (it->second) {
+                        it->second();
+                    }
                 }
             }
             if (FD_ISSET(fd, &writeFdsCopy)) {
                 auto it = writeCallbacks_.find(fd);
                 if (it != writeCallbacks_.end()) {
-                    it->second();
+                    if (it->second) {
+                        it->second();
+                    }
                 }
             }
         }

@@ -8,8 +8,24 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 设置编译选项
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread")
+# 检测操作系统类型
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(IS_LINUX TRUE)
+    add_definitions(-DPLATFORM_LINUX)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(IS_MACOS TRUE)
+    add_definitions(-DPLATFORM_MACOS)
+else()
+    message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
+endif()
+
+# 设置平台相关的编译选项
+if(IS_LINUX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread")
+elseif(IS_MACOS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pthread")
+endif()
+
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
@@ -24,6 +40,11 @@ file(GLOB CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/src/*.cc"
 )
 list(REMOVE_ITEM CORE_SOURCES "${PROJECT_SOURCE_DIR}/src/server.cc")
+
+# 根据平台添加或移除 epoll_reactor 相关文件
+if(NOT IS_LINUX)
+    list(REMOVE_ITEM CORE_SOURCES "${PROJECT_SOURCE_DIR}/src/epoll_reactor.cc")
+endif()
 
 # 主服务器可执行文件
 add_executable(server
@@ -84,5 +105,12 @@ add_custom_target(clean_logs
 # 配置信息输出
 message(STATUS "Project: ${PROJECT_NAME}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Platform: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ flags: ${CMAKE_CXX_FLAGS}")
+
+if(IS_LINUX)
+    message(STATUS "Using epoll reactor")
+elseif(IS_MACOS)
+    message(STATUS "Using kqueue reactor")
+endif()
