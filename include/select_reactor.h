@@ -16,21 +16,22 @@ class SelectReactor : public Reactor {
             LOG_ERROR("Invalid fd: {}", fd);
             return false;
         }
-
-        switch (type) {
-        case EventType::READ:
-            FD_SET(fd, &readFds_);
-            readCallbacks_[fd] = cb;
-            break;
-        case EventType::WRITE:
-            FD_SET(fd, &writeFds_);
-            writeCallbacks_[fd] = cb;
-            break;
-        default:
-            LOG_ERROR("Unsupported event type");
-            return false;
+        { 
+            std::lock_guard<std::mutex> lock(mutex_);
+            switch (type) {
+            case EventType::READ:
+                FD_SET(fd, &readFds_);
+                readCallbacks_[fd] = cb;
+                break;
+            case EventType::WRITE:
+                FD_SET(fd, &writeFds_);
+                writeCallbacks_[fd] = cb;
+                break;
+            default:
+                    LOG_ERROR("Unsupported event type");
+                    return false;
+                }
         }
-
         maxFd_ = std::max(maxFd_, fd);
         return true;
     }
@@ -40,20 +41,22 @@ class SelectReactor : public Reactor {
             LOG_ERROR("Invalid fd: {}", fd);
             return false;
         }
-
-        switch (type) {
-        case EventType::READ:
-            FD_CLR(fd, &readFds_);
-            readCallbacks_.erase(fd);
-            break;
-        case EventType::WRITE:
-            FD_CLR(fd, &writeFds_);
-            writeCallbacks_.erase(fd);
-            break;
-        default:
-            LOG_ERROR("Unsupported event type");
-            return false;
-        }
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            switch (type) {
+            case EventType::READ:
+                FD_CLR(fd, &readFds_);
+                readCallbacks_.erase(fd);
+                break;
+            case EventType::WRITE:
+                FD_CLR(fd, &writeFds_);
+                writeCallbacks_.erase(fd);
+                break;
+            default:
+                    LOG_ERROR("Unsupported event type");
+                    return false;
+                }
+            }
 
         // 更新maxFd_
         if (fd == maxFd_) {
