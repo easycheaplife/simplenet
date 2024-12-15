@@ -56,7 +56,9 @@ void EpollReactor::poll(int timeoutMs) {
             if (events & EPOLLIN) {
                 auto it = readCallbacks_.find(fd);
                 if (it != readCallbacks_.end()) {
-                    pendingCallbacks.emplace_back(fd, it->second);
+                    for (int retry = 0; retry < MAX_READ_RETRIES; ++retry) {
+                        pendingCallbacks.emplace_back(fd, it->second);
+                    }
                 }
             }
 
@@ -99,7 +101,7 @@ bool EpollReactor::addEvent(int fd, EventType type, const EventCallback& cb) {
     uint32_t events = (it != fdEvents_.end()) ? it->second : 0;
 
     if (type == EventType::READ) {
-        events |= (EPOLLIN | EPOLLET);
+        events |= (EPOLLIN | EPOLLET | EPOLLRDHUP);
         readCallbacks_[fd] = cb;
     } else if (type == EventType::WRITE) {
         events |= (EPOLLOUT | EPOLLET);
@@ -151,7 +153,6 @@ bool EpollReactor::removeEvent(int fd, EventType type) {
         events &= ~EPOLLOUT;
         writeCallbacks_.erase(fd);
     }
-    events &= ~EPOLLET;
 
     if (events == 0) {
         // 如果没有任何事件，直接删除

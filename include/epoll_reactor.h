@@ -29,4 +29,5 @@ class EpollReactor : public Reactor {
     std::vector<epoll_event> events_;
     std::unordered_map<int, uint32_t> fdEvents_;
     static const int MAX_EVENTS = 1024;
+    static constexpr int MAX_READ_RETRIES = 3;
 };
