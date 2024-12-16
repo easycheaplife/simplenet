@@ -76,6 +76,7 @@ class Socket {
             LOG_ERROR("Listen failed: {}", strerror(errno));
             return false;
         }
+        LOG_ERROR("Listen ok: backlog {}", SOMAXCONN);
         return true;
     }
 
